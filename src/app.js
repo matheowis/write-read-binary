@@ -1,7 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import FileSaver from './components/FileSaver';
-import FileLoader from './components/FileLoader';
+import FileLoader from './components/FileLoaderMapped';
+
+const testInt16 = new Uint8Array(new Int16Array([-13389]).buffer);
+console.log('the int =',new Int16Array(testInt16.buffer));
 
 const DashboardPage = () => (
   <div>

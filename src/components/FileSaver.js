@@ -1,6 +1,9 @@
 import React from 'react';
+import { DataGenerator } from '../generators/pointData';
+import { GenSettings } from '../encryption/dataMap';
+// var data = new Uint8Array(new Float32Array([1234567.456789, 2345678.432101]).buffer);
 
-var data = new Uint8Array(new Float32Array([1234567.456789, 2345678.432101]).buffer);
+var data = DataGenerator(GenSettings.size, GenSettings.test);
 
 class fileSaver extends React.Component {
   componentDidMount() {

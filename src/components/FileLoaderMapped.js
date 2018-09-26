@@ -1,4 +1,6 @@
 import React from 'react';
+import { encryptData } from '../encryption/fileEncryptor';
+import { GenSettings } from '../encryption/dataMap';
 
 class FileLoader extends React.Component {
   onLoad(file) {
@@ -8,13 +10,10 @@ class FileLoader extends React.Component {
     var reader = new FileReader();
     reader.onload = obj => {
       const res = obj.target.result;
-      var bytes = new Uint8Array(res.length);
-      for(var i =0;i<res.length;i++){
-        bytes[i] = res.charCodeAt(i);
-      }
-      console.log('bytes=',bytes);
-      const floats = new Float32Array(bytes.buffer);
-      console.log('floats=',floats);
+      const result = encryptData(obj.target.result);
+      console.log()
+      console.log('Loaded Test =', result[GenSettings.test]);
+      console.log('encryptData', result);
     }
     reader.readAsBinaryString(blob);
   }
