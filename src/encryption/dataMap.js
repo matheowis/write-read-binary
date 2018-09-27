@@ -13,8 +13,8 @@ export const bytesPerPoint = () => {
 }
 
 export const GenSettings = {
-  size:500,
-  test:342
+  size: 50000,
+  test: 35671
 }
 
 export const bitsToEndData = (dataType = dataMap[0], inputBytes = new Uint8Array()) => {
