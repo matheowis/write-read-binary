@@ -19,10 +19,13 @@ new class binaryStore {
       }
     }
 
+    // TODO it should handle sorting! don't let any user make a mistake in order!
     this.Encode = (props = [[{
       name: 'branches',
       value: [false, false, false, false, false, false, false, false]
     }]]) => {
+
+
       let length = 1;// fist byte drfines format// if branches not used(undefined) than 0 else 1
 
       ///BINARY-LENGTH//////BINARY-LENGTH//////BINARY-LENGTH///
@@ -37,7 +40,7 @@ new class binaryStore {
       } else {
         props.map(prop => {
           const localBranches = [];
-          length++;//which branches (up to 9);
+          length++;//which branches (up to 8);
           prop.map(variable => {
             const localBranch = structure.find(sVariable => sVariable.name === variable.name).branch;
             if (!localBranches.includes(localBranch)) {
