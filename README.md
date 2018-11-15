@@ -18,7 +18,7 @@
 
   The above code means that in each iteration there will be a variable of type float32 and name myName
 
-  index is used to define items with extra variables,first byte at the begining of each iteration will tell if there are any of them, so in binary: 
+  index is used to define items with extra variables,first byte at the beggining of each iteration will tell if there are any of them, so in binary: 
   - 00000000 mean that only variables with indexes ( 0 ) are present in this iteration 
   - 01001010 mean that only variables with indexes ( 0, 2, 4, 7 ) are present in this iteration
 
@@ -41,7 +41,7 @@
 
   # Write
   ```
-  const allIteams = [
+  const allItems = [
     {
       myFloatName:5.765,
       myArrayName:[ 56, 78, 23 ],
@@ -56,7 +56,7 @@
     }
   ]
 
-  myBinary.AddAllItems(allIteams);
+  myBinary.AddAllItems(allItems);
   myBinary.getBlob();
   ```
 
@@ -65,5 +65,6 @@
   # Read
 
   I don't have any functions for that yet
+  i plan to give back the same object as allItems
 
 
