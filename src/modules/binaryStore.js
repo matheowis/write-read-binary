@@ -1,6 +1,6 @@
 import ByteData from './ByteData'
 
-new class binaryStore {
+new class BinaryStore {
   constructor() {
     // const structure = [[], [], [], [], [], [], [], [], []];
     const structure = {
@@ -9,7 +9,6 @@ new class binaryStore {
       types: {},
       typeValues: {}
     };
-
     const typeValues = {
       Uint8: 1,
       Uint16: 2,
@@ -20,17 +19,34 @@ new class binaryStore {
       float32: 4,
       float64: 8,
     }
-    this.appendStructure = (type, name, branch = 0) => {
-      structure.data[branch].push({ type, name, byteSize: typeValues[type] });
-      structure.data[branch].sort((a, b) => {
-        const nameA = a.name.toUpperCase();
-        const nameB = b.name.toUpperCase();
-        return nameA < nameB ? -1 : 1;
-      });
-      structure.branches[name] = branch;
-      structure.types[name] = type;
-      structure.typeValues[name] = typeValues[type];
+    this.appendStructure = (type, name, slot = 0) => {
+      // mian idea
+      // based on state (new name for branch), i can determin how to load file
+      // 0 - this.stateEnum.continue
+      // this means that the next item structer will not change
+      // 1 - this.stateEnum.change
+      // this means that the next item structer will change
+      // 2 - this.stateEnum.finish
+      // this means that the next item structer will change to first one(next item)
+      //code:
+      if (slot >= 85) {//85 * 3 = 255, each structure have 3 states 
+        console.error(`Error BinaryStore.appendStructure - maximum slot number is 85 (current ${slot / 3})`);
+      }
+
+      //end
+
     }
+    // this.appendStructure = (type, name, branch = 0) => {
+    //   structure.data[branch].push({ type, name, byteSize: typeValues[type] });
+    //   structure.data[branch].sort((a, b) => {
+    //     const nameA = a.name.toUpperCase();
+    //     const nameB = b.name.toUpperCase();
+    //     return nameA < nameB ? -1 : 1;
+    //   });
+    //   structure.branches[name] = branch;
+    //   structure.types[name] = type;
+    //   structure.typeValues[name] = typeValues[type];
+    // }
 
     // TODO it should handle sorting! don't let any user make a mistake in order!
     // TODO clear overdecleration branches, no need for user to handle it
@@ -50,7 +66,7 @@ new class binaryStore {
           localData[structure.branches[name]].push({ name, type: structure.types[name], value: item[name] })
           localData[structure.branches[name]].sort((a, b) => a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1);
         })
-        return [{ name: 'branch', type: this.type.Uint8, value: branchVar }, localData.concat(...arr)];
+        return [{ name: 'branch', type: this.typeEnum.Uint8, value: branchVar }, localData.concat(...arr)];
       })
       console.log(`size of binary data = ${(binaryLength / 1024).toFixed(2)}kb`);
       const binaryData = new ByteData(binaryLength);
@@ -63,7 +79,12 @@ new class binaryStore {
     this.Decode = () => { }
 
   }
-  type = {
+  stateEnum = {
+    continue: 0,
+    change: 1,
+    finish: 2
+  }
+  typeEnum = {
     Uint8: 'Uint8',
     Uint16: 'Uint16',
     Uint32: 'Uint32',
