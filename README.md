@@ -18,7 +18,9 @@
 
   The above code means that in each iteration there will be a variable of type float32 and name myName
 
-  index is used to define items with extra variables,first byte at the begining of each iteration will tell if there are any of them, so in binary 00000000 mean that only variables with index = 0 are present in this iteration, but if binary would be  01001010 then it means that variables with indexes (0,2,4,7) are defined in this iteration
+  index is used to define items with extra variables,first byte at the begining of each iteration will tell if there are any of them, so in binary: 
+  00000000 mean that only variables with indexes ( 0 ) are present in this iteration 
+  01001010 mean that only variables with indexes ( 0, 2, 4, 7 ) are present in this iteration
 
   there will also be array definition
   ```
