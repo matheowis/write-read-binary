@@ -14,13 +14,31 @@ const typeEnum = {
   // could allow only letters and numbers (62) using 6 bit per symbol
   // 64 if i add space and / for special characters, also, due to bit shift it would be encrypted
 }
-
+const CharacterMapping6bit = {
+  ' ': 0, '.': 1,//2
+  q: 2, w: 3, e: 4, r: 5, t: 6, y: 7, u: 8, i: 9, o: 10, p: 11,
+  a: 12, s: 13, d: 14, f: 15, g: 16, h: 17, j: 18, k: 19, l: 20, z: 21, x: 22,
+  c: 23, v: 24, b: 25, n: 26, m: 27,//26
+  Q: 28, W: 29, E: 30, R: 31, T: 32, Y: 33, U: 34, I: 35, O: 36, P: 37, A: 38,
+  S: 39, D: 40, F: 41, G: 42, H: 43, J: 44, K: 45, L: 46, Z: 47, X: 48, C: 49,
+  V: 50, B: 51, N: 52, M: 53,//26
+  '1': 54, '2': 55, '3': 56, '4': 57, '5': 58, '6': 59, '7': 60, '8': 61, '9': 62, '0': 63//10
+}
+const CharacterMapping7bit = {
+  ' ': 0, '.': 1,//2
+  q: 2, w: 3, e: 4, r: 5, t: 6, y: 7, u: 8, i: 9, o: 10, p: 11,
+  a: 12, s: 13, d: 14, f: 15, g: 16, h: 17, j: 18, k: 19, l: 20, z: 21, x: 22,
+  c: 23, v: 24, b: 25, n: 26, m: 27,//26
+  Q: 28, W: 29, E: 30, R: 31, T: 32, Y: 33, U: 34, I: 35, O: 36, P: 37, A: 38,
+  S: 39, D: 40, F: 41, G: 42, H: 43, J: 44, K: 45, L: 46, Z: 47, X: 48, C: 49,
+  V: 50, B: 51, N: 52, M: 53,//26
+  '1': 54, '2': 55, '3': 56, '4': 57, '5': 58, '6': 59, '7': 60, '8': 61, '9': 62, '0': 63//10
+}
 // idea for the future //
 // using additional byte in each variable you could load any data
 // first byte would tell what type it is and if it is an array
 // it would increase the overal size and made it easy to decode
 // end of the idea //
-
 
 const structureItem = [
   {
@@ -248,10 +266,10 @@ function WriteBOOL(values = []) {
 function WriteSTRING6(value = '') {
   const binary = '';
   for (char in value) {
-    if (CharacterMapping64[char] === undefined) {
+    if (CharacterMapping6bit[char] === undefined) {
       throw `BinaryWriteRead does not support character "${value}".\n Please use standard english characters with no special symbols in Your string`//\n or use UTF type
     }
-    binary += CharacterMapping64[char].toString(2);
+    binary += CharacterMapping6bit[char].toString(2);
   }
   const frontCut = 8 - binary.length % 8; // first string bit, tells how many frontal 0 have to be cut off
   for (var i = 0; i < frontCut; i++)
@@ -262,16 +280,7 @@ function WriteSTRING6(value = '') {
     outBinary.Push(parseInt(binary.substr(0, 8), 2));
   return outBinary.binary;
 }
-const CharacterMapping64 = {
-  ' ': 0, '.': 1,//2
-  q: 2, w: 3, e: 4, r: 5, t: 6, y: 7, u: 8, i: 9, o: 10, p: 11,
-  a: 12, s: 13, d: 14, f: 15, g: 16, h: 17, j: 18, k: 19, l: 20, z: 21, x: 22,
-  c: 23, v: 24, b: 25, n: 26, m: 27,//26
-  Q: 28, W: 29, E: 30, R: 31, T: 32, Y: 33, U: 34, I: 35, O: 36, P: 37, A: 38,
-  S: 39, D: 40, F: 41, G: 42, H: 43, J: 44, K: 45, L: 46, Z: 47, X: 48, C: 49,
-  V: 50, B: 51, N: 52, M: 53,//26
-  '1': 54, '2': 55, '3': 56, '4': 57, '5': 58, '6': 59, '7': 60, '8': 61, '9': 62, '0': 63//10
-}
+
 // const testBuffer = [
 //   {
 //     name1: { type, value, isArray }
@@ -281,8 +290,5 @@ const CharacterMapping64 = {
 const myObj = new BinaryWriteRead();
 
 myObj.AppendStructure(typeEnum.int32);
-
-
-
 
 export default BinaryWriteRead;
