@@ -7,7 +7,10 @@ const typeEnum = {
   uint8: 'ui8',
   uint16: 'ui16',
   uint32: 'ui32',
-  bool: 'b8'
+  bool: 'b8',
+  string: 's' // first byte is the string length, can i lower the size? 
+  // could allow only letters and numbers (62) using 6 bit per symbol
+  // 64 if i add space and / for special characters, also, due to bit shift it would be encrypted
 }
 
 // idea for the future //
@@ -32,9 +35,20 @@ structureItem.map(structure => {
 })
 
 const BinaryWriteRead = function () {
+  // dont change that directly!
   this.__structure = [];
+
+  // dont change that directly!
   this.__buffer = [];
-  this.__binary = new Uint8Array();
+
+  // dont change that directly!
+  this.__binary;
+
+  // that will allow creating of arrays bigger then 2^21 elements
+  this.enableLongArrays = false;
+
+  // only affects Writing
+  this.format = 'bin';
 }
 
 BinaryWriteRead.prototype.AppendStructure = function (type, name = '', index = 0) {
@@ -50,6 +64,7 @@ BinaryWriteRead.prototype.AppendStructure = function (type, name = '', index = 0
     this.__structure.push({ index: index, struct: [{ type: type, isArray: false }] });
   }
 }
+
 BinaryWriteRead.prototype.AppendStructureArray = function (type, name = '', index = 0) {
   if (name === '') { throw 'You have to assing name in AppendStructureArray method' }
   const indextStruct = this.__structure.find(item.index === index);
@@ -79,14 +94,20 @@ BinaryWriteRead.prototype.AppendStructureBool = function (names = [], index = 0)
 
 /// it may ba a good idea to use workers here in the future
 BinaryWriteRead.prototype.AddItem = function (item = {}) {
+  const localBuffer = { indexes: [] };
   for (var segment in this.__structure) {
     for (var variable in segment.struct) {
       const name = Object.keys(item).find(key => key === variable.name);
       if (name) {
-        this.__buffer[name] = { value: item[name], type: variable.type, isArray: variable.isArray };
+        if (!localBuffer.indexes.includes(segment.index)) {
+          localBuffer.indexes.push(segment.index);
+        }
+        localBuffer[name] = { value: item[name], type: variable.type, isArray: variable.isArray };
       }
     }
   }
+  localBuffer.indexes.sort((a, b) => a - b);
+  this.__buffer.push(localBuffer);
 }
 /// if you decide to use workers remember to rewrite Additem implementation into the worker
 BinaryWriteRead.prototype.AddAllItems = function (items = []) {
@@ -94,10 +115,61 @@ BinaryWriteRead.prototype.AddAllItems = function (items = []) {
     this.AddItem(item);
   }
 }
+// it probably should return a promise
 BinaryWriteRead.prototype.Write = function () {
-  EncodeFormat();
-}
+  const binaryLength = getBinarySize(this.__buffer);
 
+  this.__binary = new Uint8Array(binaryLength);
+  for(var item in this.__buffer){
+    for(index in item.indexes){
+      const structs = this.__structure.find(id => id.index === index).struct;
+      
+
+      
+    }
+  }
+  
+  // will have to change in new array encoding type
+function getBinarySize(buffer=[]){
+  const binaryLength = 0;
+  for (var item in buffer) {
+    binaryLength++; //indexByte
+    const itemKeys = Object.keys(item);
+    for (var key in itemKeys) {
+      if (item[key].isArray) {
+        binaryLength += 2;//Uint16 that sets the length of the array
+        binaryLength += item[key].value.length * typeSize(item[key].type);
+      } else {
+        binaryLength += typeSize(item[key].type);
+      }
+    }
+  }
+  return binaryLength;
+}
+  // EncodeFormat();
+}
+function typeSize(type) {
+  switch (type) {
+    case typeEnum.uint8:
+      return 1;
+    case typeEnum.uint16:
+      return 2;
+    case typeEnum.uint32:
+      return 4;
+    case typeEnum.int8:
+      return 1;
+    case typeEnum.int16:
+      return 2;
+    case typeEnum.int32:
+      return 4;
+    case typeEnum.float32:
+      return 4;
+    case typeEnum.float64:
+      return 8;
+    case typeEnum.bool:
+      return 1;
+  }
+}
 function EncodeFormat(type, value) {
   switch (type) {
     case typeEnum.uint8:
@@ -163,6 +235,8 @@ function WriteBOOL(values = []) {
 const myObj = new BinaryWriteRead();
 
 myObj.AppendStructure(typeEnum.int32);
+
+
 
 
 export default BinaryWriteRead;

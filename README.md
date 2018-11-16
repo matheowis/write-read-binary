@@ -29,6 +29,25 @@
   ```
   first 2 bytes of array will define its length, so the max length of na array is 2^16
 
+  Another idea for length definition:
+
+  length bytes could be set like UTF-8 encoding, so first bits would tell how much bytes we need
+  in case of 2 bytes the maximum number of uint would be 2^14 instead of 2^16,
+  but it could decrease size on numbers lower than 2^7 and it wouldn't have any length limits
+  it probably should have limit of 4 or 5 byte anyway to prevent some precision errors
+  in such encoding using 32bit and maximum lengths it would take
+  - 1 byte - 0.5kb - 2^7 * 4 bytes
+  - 2 byte - 64kb  - 2^14 * 4 bytes
+  - 3 byte - 8mb   - 2^21 * 4 bytes
+  - 4 byte - 1gb   - 2^28 * 4 bytes
+  - 5 byte - 128gb - 2^35 * 4 bytes
+
+  i personaly can't see the need of saving arrays that are larger than 2^21, so i'll probably create an error if anyone will try creating any bigger array
+
+  ```
+  myBinary.enableLongArrays = true; // no more length errors
+  ```
+
   there will also be option for boolean definition with 
   ```
   BinaryWriteRead.AppendStructureBool(names,index);
