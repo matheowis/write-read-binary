@@ -203,8 +203,36 @@ function typeSize(type) {
       return 8;
     case typeEnum.bool:
       return 1;
+    default:
+      return 1;
   }
 }
+function EncodeArrayFormat(type, value) {
+  switch (type) {
+    case typeEnum.uint8:
+      return WriteArrayUINT8(value);
+    case typeEnum.uint16:
+      return WriteArrayUINT16(value);
+    case typeEnum.uint32:
+      return WriteArrayUINT32(value);
+    case typeEnum.int8:
+      return WriteArrayINT8(value);
+    case typeEnum.int16:
+      return WriteArrayINT16(value);
+    case typeEnum.int32:
+      return WriteArrayINT32(value);
+    case typeEnum.float32:
+      return WriteArrayFLOAT32(value);
+    case typeEnum.float64:
+      return WriteArrayFLOAT64(value);
+    // case typeEnum.bool:
+    //   return WriteBOOL(value);
+    // case typeEnum.string:
+    //   return WriteSTRING6(value);
+  }
+}
+
+
 function EncodeFormat(type, value) {
   switch (type) {
     case typeEnum.uint8:
@@ -229,6 +257,107 @@ function EncodeFormat(type, value) {
       return WriteSTRING6(value);
   }
 }
+
+function ArrayLengthEncoding(value = []) {
+  const MaxSize = n => Math.pow(2, (n * 8) - n); // 2^7, 2^14
+  let bytes = 1;
+  while (value.length > MaxSize(bytes)) {
+    bytes++;
+    if(bytes > 4){
+      // would be good to tell the name of the array!
+      throw `ArrayLengthEncoding Error: too long array, max size of an array is 2^27`;
+    }
+  }
+  const binaryLength = value.length.toString(2);
+  const bitsToFill = 8 - (binaryLength % 8); // bitsToFill can never be 0!!
+  if (bitsToFill === 0) {
+    throw `Fatal Error in ArrayLengthEncoding, bitsToFill = ${bitsToFill}, it can never be 0, thats BinaryWriteRead module bug`;
+  }
+  let binaryData = '';
+  for (var i = 1; i < bytes; i++) {
+    binaryData += '1';
+  }
+  binaryData += '0' + binaryLength; // length is written after first 
+  // on READ:
+  // byteLength += byte[i].toString(2);
+  // parseInt(byteLength.slice(byteLength.indexOf('0')),2);
+  const endBytes = [];
+  for(var i =0;i<bytes;i++){
+    endBytes.push(parseInt(binaryData.substr(i*8,8),2));
+  }
+  return endBytes;
+}
+
+function WriteArrayUINT8(values = []) {
+  const lengthBytes = ArrayLengthEncoding(values);
+  lengthBytes.push(...values);
+  return new Uint8Array(lengthBytes);
+}
+function WriteArrayUINT16(values = []) {
+  const lengthBytes = ArrayLengthEncoding(values);
+  const myBinary = new SmartBinary(lengthBytes.length + values.length * 2);
+  myBinary.Push(...lengthBytes);
+  for(val in values){
+    myBinary.AddArray(new Uint8Array(new Uint16Array([values]).buffer));
+  }
+  return myBinary.binary;
+}
+function WriteArrayUINT32(values = []) {
+  const lengthBytes = ArrayLengthEncoding(values);
+  const myBinary = new SmartBinary(lengthBytes.length + values.length * 4);
+  myBinary.Push(...lengthBytes);
+  for(val in values){
+    myBinary.AddArray(new Uint8Array(new Uint32Array([values]).buffer));
+  }
+  return myBinary.binary;
+}
+function WriteArrayINT8(values = []) {
+  const lengthBytes = ArrayLengthEncoding(values);
+  const myBinary = new SmartBinary(lengthBytes.length + values.length);
+  myBinary.Push(...lengthBytes);
+  for(val in values){
+    myBinary.AddArray(new Uint8Array(new Int8Array([values]).buffer));
+  }
+  return myBinary.binary;
+}
+function WriteArrayINT16(values = []) {
+  const lengthBytes = ArrayLengthEncoding(values);
+  const myBinary = new SmartBinary(lengthBytes.length + values.length * 2);
+  myBinary.Push(...lengthBytes);
+  for(val in values){
+    myBinary.AddArray(new Uint8Array(new Int16Array([values]).buffer));
+  }
+  return myBinary.binary;
+}
+function WriteArrayINT32(values = []) {
+  const lengthBytes = ArrayLengthEncoding(values);
+  const myBinary = new SmartBinary(lengthBytes.length + values.length * 4);
+  myBinary.Push(...lengthBytes);
+  for(val in values){
+    myBinary.AddArray(new Uint8Array(new Int32Array([values]).buffer));
+  }
+  return myBinary.binary;
+}
+function WriteArrayFLOAT32(values = []) {
+  const lengthBytes = ArrayLengthEncoding(values);
+  const myBinary = new SmartBinary(lengthBytes.length + values.length * 4);
+  myBinary.Push(...lengthBytes);
+  for(val in values){
+    myBinary.AddArray(new Uint8Array(new Float32Array([values]).buffer));
+  }
+  return myBinary.binary;
+}
+function WriteArrayFLOAT64(values = []) {
+  const lengthBytes = ArrayLengthEncoding(values);
+  const myBinary = new SmartBinary(lengthBytes.length + values.length * 8);
+  myBinary.Push(...lengthBytes);
+  for(val in values){
+    myBinary.AddArray(new Uint8Array(new Float64Array([values]).buffer));
+  }
+  return myBinary.binary;
+}
+
+
 
 function WriteUINT8(value) {
   return new Uint8Array([value])
