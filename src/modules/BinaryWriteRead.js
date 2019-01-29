@@ -263,7 +263,7 @@ function ArrayLengthEncoding(value = []) {
   let bytes = 1;
   while (value.length > MaxSize(bytes)) {
     bytes++;
-    if(bytes > 4){
+    if (bytes > 4) {
       // would be good to tell the name of the array!
       throw `ArrayLengthEncoding Error: too long array, max size of an array is 2^27`;
     }
@@ -282,8 +282,8 @@ function ArrayLengthEncoding(value = []) {
   // byteLength += byte[i].toString(2);
   // parseInt(byteLength.slice(byteLength.indexOf('0')),2);
   const endBytes = [];
-  for(var i =0;i<bytes;i++){
-    endBytes.push(parseInt(binaryData.substr(i*8,8),2));
+  for (var i = 0; i < bytes; i++) {
+    endBytes.push(parseInt(binaryData.substr(i * 8, 8), 2));
   }
   return endBytes;
 }
@@ -297,7 +297,7 @@ function WriteArrayUINT16(values = []) {
   const lengthBytes = ArrayLengthEncoding(values);
   const myBinary = new SmartBinary(lengthBytes.length + values.length * 2);
   myBinary.Push(...lengthBytes);
-  for(val in values){
+  for (val in values) {
     myBinary.AddArray(new Uint8Array(new Uint16Array([values]).buffer));
   }
   return myBinary.binary;
@@ -306,7 +306,7 @@ function WriteArrayUINT32(values = []) {
   const lengthBytes = ArrayLengthEncoding(values);
   const myBinary = new SmartBinary(lengthBytes.length + values.length * 4);
   myBinary.Push(...lengthBytes);
-  for(val in values){
+  for (val in values) {
     myBinary.AddArray(new Uint8Array(new Uint32Array([values]).buffer));
   }
   return myBinary.binary;
@@ -315,7 +315,7 @@ function WriteArrayINT8(values = []) {
   const lengthBytes = ArrayLengthEncoding(values);
   const myBinary = new SmartBinary(lengthBytes.length + values.length);
   myBinary.Push(...lengthBytes);
-  for(val in values){
+  for (val in values) {
     myBinary.AddArray(new Uint8Array(new Int8Array([values]).buffer));
   }
   return myBinary.binary;
@@ -324,7 +324,7 @@ function WriteArrayINT16(values = []) {
   const lengthBytes = ArrayLengthEncoding(values);
   const myBinary = new SmartBinary(lengthBytes.length + values.length * 2);
   myBinary.Push(...lengthBytes);
-  for(val in values){
+  for (val in values) {
     myBinary.AddArray(new Uint8Array(new Int16Array([values]).buffer));
   }
   return myBinary.binary;
@@ -333,7 +333,7 @@ function WriteArrayINT32(values = []) {
   const lengthBytes = ArrayLengthEncoding(values);
   const myBinary = new SmartBinary(lengthBytes.length + values.length * 4);
   myBinary.Push(...lengthBytes);
-  for(val in values){
+  for (val in values) {
     myBinary.AddArray(new Uint8Array(new Int32Array([values]).buffer));
   }
   return myBinary.binary;
@@ -342,7 +342,7 @@ function WriteArrayFLOAT32(values = []) {
   const lengthBytes = ArrayLengthEncoding(values);
   const myBinary = new SmartBinary(lengthBytes.length + values.length * 4);
   myBinary.Push(...lengthBytes);
-  for(val in values){
+  for (val in values) {
     myBinary.AddArray(new Uint8Array(new Float32Array([values]).buffer));
   }
   return myBinary.binary;
@@ -351,13 +351,62 @@ function WriteArrayFLOAT64(values = []) {
   const lengthBytes = ArrayLengthEncoding(values);
   const myBinary = new SmartBinary(lengthBytes.length + values.length * 8);
   myBinary.Push(...lengthBytes);
-  for(val in values){
+  for (val in values) {
     myBinary.AddArray(new Uint8Array(new Float64Array([values]).buffer));
   }
   return myBinary.binary;
 }
+function WriteArrayBOOL(values = [[]]) {
+  const lengthBytes = ArrayLengthEncoding(values);
+  const myBinary = new SmartBinary(lengthBytes.length + values.length * 8);
+  myBinary.Push(...lengthBytes);
+  for (val in values) {
+    let binary = '';
+    for (value in values) {
+      if (value) binary += '1';
+      else binary += '0'
+    }
+    myBinary.Push(parseInt(binary, 2));
+  }
+  return myBinary.binary;
+}
+//TODO chenge to support array
+function WriteArraySTRING6(values = '') {
+  for (text in values) {
+    for (char in text) {
 
+    }
+  }
+  const ArrayOutBinary = new SmartBinary();
 
+  const binary = '';
+  for (char in values) {
+    if (CharacterMapping6bit[char] === undefined) {
+      throw `BinaryWriteRead does not support character "${values}".\n Please use standard english characters with no special symbols in Your string`//\n or use UTF type
+    }
+    binary += To6Bit(CharacterMapping6bit[char]); // error its length is between 1 and 6
+  }
+  const frontCut = 8 - binary.length % 8; // first string bit, tells how many frontal 0 have to be cut off
+  for (var i = 0; i < frontCut; i++)
+    binary = '0' + binary;
+  const outBinary = new SmartBinary(1 + binary.length / 8);
+  outBinary.Push(frontCut);
+  for (var i = 0; i < binary.length / 8; i++)
+    outBinary.Push(parseInt(binary.substr(0, 8), 2));
+  return outBinary.binary;
+}
+function To6Bit(binaryInt = 0) {
+  const localBinary = binaryInt.toString(2);
+  if (localBinary.length > 6) {
+    throw `To6Bit error - localBinary.length= ${localBinary.length}, should be lower then 6`;
+  }
+  let outBitString = '';
+  for (var i = 0; i < 6 - localBinary.length; i++) {
+    outBitString += '0';
+  }
+  outBitString += localBinary;
+  return outBitString;
+}
 
 function WriteUINT8(value) {
   return new Uint8Array([value])
